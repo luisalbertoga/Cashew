@@ -2,7 +2,10 @@ version: '3.8'
 
 services:
   flutter_dev:
-    image: cirrusci/flutter:3.8.0-10.1.pre
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: flutter_dev
     volumes:
       - ./budget:/app
     working_dir: /app
