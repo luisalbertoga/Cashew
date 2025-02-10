@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  flutter_dev:
+    image: cirrusci/flutter:latest
+    volumes:
+      - ./budget:/app
+    working_dir: /app
+    ports:
+      - "8080:8080"  # For web development server
+      - "42000:42000"  # For debugging
+    environment:
+      - FLUTTER_ROOT=/usr/local/flutter
+    command: >
+      sh -c "flutter pub get &&
+             flutter run -d web-server --web-port=8080 --web-hostname=0.0.0.0"
+
+  flutter_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"  # Production web server
+
+  # Optional service for Firebase Emulator if needed
+  # firebase_emulator:
+  #   image: andreysenov/firebase-tools
+  #   ports:
+  #     - "9099:9099"  # Auth
+  #     - "5001:5001"  # Functions
+  #     - "8080:8080"  # Hosting
+  #     - "9000:9000"  # Realtime Database
+  #     - "8085:8085"  # Firestore
+  #   volumes:
+  #     - ./:/app
+  #   working_dir: /app
+  #   command: firebase emulators:start --project demo-project
