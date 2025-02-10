@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   flutter_dev:
-    image: cirrusci/flutter:latest
+    image: cirrusci/flutter:3.16.0
     volumes:
       - ./budget:/app
     working_dir: /app
@@ -13,7 +13,7 @@ services:
       - FLUTTER_ROOT=/usr/local/flutter
     command: >
       sh -c "flutter pub get &&
-             flutter run -d web-server --web-port=8080 --web-hostname=0.0.0.0"
+             flutter run -d web-server --web-port=8787 --web-hostname=0.0.0.0"
 
   flutter_prod:
     build:
