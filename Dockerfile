@@ -1,5 +1,5 @@
 # Stage 1 - Build the Flutter web app
-FROM cirrusci/flutter:3.16.0 AS builder
+FROM cirrusci/flutter:3.8.0-10.1.pre AS builder
 
 # Set working directory
 WORKDIR /app
