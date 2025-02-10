@@ -9,13 +9,16 @@ services:
     volumes:
       - ./budget:/app
     working_dir: /app
+    user: developer
     ports:
       - "8080:8787"  # For web development server
       - "42000:42000"  # For debugging
     environment:
       - FLUTTER_ROOT=/usr/local/flutter
+      - DEBIAN_FRONTEND=noninteractive
     command: >
-      sh -c "flutter pub get &&
+      sh -c "flutter clean &&
+             flutter pub get &&
              flutter run -d web-server --web-port=8787 --web-hostname=0.0.0.0"
 
   flutter_prod:

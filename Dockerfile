@@ -1,6 +1,9 @@
 # Stage 1: Build the base Flutter development image
 FROM ubuntu:22.04 AS flutter_dev
 
+# Avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install necessary dependencies
 RUN apt-get update && apt-get install -y \
     curl \
@@ -16,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     ninja-build \
     pkg-config \
     libgtk-3-dev \
+    chromium-browser \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up Flutter
@@ -27,20 +31,30 @@ ENV PATH="${FLUTTER_HOME}/bin:${PATH}"
 RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git ${FLUTTER_HOME}
 
 # Run basic check and pre-download development binaries
-RUN flutter doctor
+RUN flutter doctor --verbose
 RUN flutter config --no-analytics
 RUN flutter precache
+RUN flutter pub cache repair
+
+# Create a non-root user
+RUN useradd -ms /bin/bash developer
+USER developer
+
+# Set the working directory
+WORKDIR /home/developer
 
 # Stage 2: Build the Flutter web app
 FROM flutter_dev AS builder
 
-# Set working directory
+# Switch back to root for installation
+USER root
 WORKDIR /app
 
 # Copy the Flutter project files
-COPY budget/. .
+COPY --chown=developer:developer budget/. .
 
 # Get Flutter packages
+RUN flutter clean
 RUN flutter pub get
 
 # Build the Flutter web app
@@ -51,6 +65,16 @@ FROM nginx:alpine
 
 # Copy the built web files from builder stage
 COPY --from=builder /app/build/web /usr/share/nginx/html
+
+# Add custom nginx configuration
+RUN echo 'server { \
+    listen 80; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html index.htm; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
